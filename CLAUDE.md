@@ -1,3 +1,9 @@
+## SESSION START — READ THIS FIRST
+
+**Before exploring any other files, read `PROJECT_MAP.md`** — it is the complete knowledge center for this codebase (architecture, database schema, API routes, frontend structure, auth flow, conventions). Do NOT scan individual files to understand the project; use PROJECT_MAP.md as your single source of truth.
+
+---
+
 ## Defined rules for backend and frontend in terms of coding. 
 
 Frontend: -
@@ -14,6 +20,7 @@ Code and codebase structure wise -
 - For any success and failed, show proper error to user in a toast. use this package - (docs - https://www.npmjs.com/package/react-toastify)
 - On frontend if error message coming from backend then show that error message, else write one.
 - IMPORTANT: - Don't create any custom component by coding yourself. just use shadcn components ONLY. For Dialogue, Dropdown, input, button and each and everything.
+- for any form use react-form-hook (docs - https://react-hook-form.com/) and yup for validation. add validation everywhere.
 
 Design Wise -
 
@@ -29,6 +36,8 @@ Backend: -
 - Always use proper Error handling and try to cover each and ever case. 
 - Don't use any type, just define types and interfaces for everything
 - Always add comments and proper code documentation for everything you do.
+- for every module, create new validation file and write the zod validition scheme there only.
 
 For agent: -
-- After every execution just make sure you create a .md file inside rules rolder with same number sequence and dump decisons that you took and everything you did. just document it properly. 
+- After every execution just make sure you create a .md file inside specs folder rolder with same number sequence and dump decisons that you took and everything you did. just document it properly. 
+- **IMPORTANT: - Everytime do you any chanegs and then you need to update the PROJECT_MAP.md file whenever required, don't read the whole codebase everytime, just read PROJECT_MAP.md file to understand the whole codebase.**
