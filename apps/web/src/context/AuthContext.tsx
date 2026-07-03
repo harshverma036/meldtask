@@ -55,6 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => {
     localStorage.removeItem("auth_token");
+    localStorage.removeItem("active_workspace_id");
     setUser(null);
   }, []);
 

@@ -11,6 +11,8 @@ import {
   Shield,
   Menu,
   X,
+  Building,
+  FolderKanban,
 } from "lucide-react";
 
 interface NavItem {
@@ -27,6 +29,8 @@ export function Sidebar() {
 
   const navItems: NavItem[] = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/" },
+    { icon: Building, label: "Workspaces", href: "/workspaces" },
+    { icon: FolderKanban, label: "Projects", href: "/projects" },
     { icon: CheckSquare, label: "Tasks", href: "/tasks" },
     { icon: Users, label: "Teams", href: "/teams" },
     { icon: Target, label: "Goals", href: "/goals" },

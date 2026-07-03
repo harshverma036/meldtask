@@ -26,6 +26,17 @@ enum TeamMemberRole {
   Member
 }
 
+enum WorkspaceMemberRole {
+  Owner
+  Admin
+  Member
+}
+
+enum ProjectMemberRole {
+  Owner
+  Member
+}
+
 // ── User ───────────────────────────────────────────────────────────────────────
 
 model User {
@@ -42,7 +53,11 @@ model User {
   updatedAt DateTime   @updatedAt
 
   // Relations
-  teams TeamMember[]
+  teams             TeamMember[]
+  workspaces        WorkspaceMember[]
+  projects          ProjectMember[]
+  createdWorkspaces Workspace[]
+  createdProjects   Project[]
 }
 
 // ── Team ───────────────────────────────────────────────────────────────────────
@@ -71,4 +86,66 @@ model TeamMember {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([teamId, userId])
+}
+
+// ── Workspace ──────────────────────────────────────────────────────────────────
+
+model Workspace {
+  id          String             @id @default(cuid())
+  name        String
+  description String?
+  createdBy   String
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  creator User              @relation(fields: [createdBy], references: [id], onDelete: Restrict)
+  members WorkspaceMember[]
+  projects Project[]
+}
+
+// ── WorkspaceMember (join table) ──────────────────────────────────────────────
+
+model WorkspaceMember {
+  id          String               @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        WorkspaceMemberRole  @default(Member)
+  joinedAt    DateTime             @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+}
+
+// ── Project ────────────────────────────────────────────────────────────────────
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  statuses    String[]
+  workspaceId String
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  creator   User            @relation(fields: [createdBy], references: [id], onDelete: Restrict)
+  members   ProjectMember[]
+}
+
+// ── ProjectMember (join table) ────────────────────────────────────────────────
+
+model ProjectMember {
+  id        String            @id @default(cuid())
+  projectId String
+  userId    String
+  role      ProjectMemberRole @default(Member)
+  joinedAt  DateTime          @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
 }

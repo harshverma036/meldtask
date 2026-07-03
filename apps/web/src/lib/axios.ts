@@ -26,6 +26,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem("auth_token");
+      localStorage.removeItem("active_workspace_id");
       // Only redirect if not already on login page
       if (window.location.pathname !== "/login") {
         window.location.href = "/login";

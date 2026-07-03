@@ -20,8 +20,6 @@ Standard shadcn Button with CVA variants: default (primary), destructive, outlin
 ### `components/ui/input.tsx`
 Standard shadcn Input — styled `<input>` with dark theme border/bg/focus-ring.
 
-All components use existing `@/lib/utils.ts` `cn()` utility and the dark theme CSS variables from `index.css`.
-
 ---
 
 ## 2. Admin Invite Endpoint
@@ -31,66 +29,125 @@ All components use existing `@/lib/utils.ts` `cn()` utility and the dark theme C
 - Checks email domain is allowed (`youngun.in`, `meldit.ai`, or whitelist)
 - Creates User with `status: "Active"` (pre-approved), given role, no password/googleId
 - Returns 201 with created user, or 409 if email already exists
-- Added `isEmailAuthorized()` helper (mirrors `checkEmailAuthorized` from auth.ts)
-
-### Invite + Login flow:
-1. Admin invites `dev@youngun.in` as Developer → User created (Active, no googleId)
-2. User signs in via Google → `findFirst({ OR: [{ googleId }, { email }] })` finds by email
-3. googleId/name/avatarUrl updated on login, JWT issued (already Active)
 
 ---
 
-## 3. CreateTeamDialog Refactored
-
-- Replaced custom `fixed` backdrop + centered `div` with `<Dialog>` + `<DialogContent>`
-- Uses `<DialogHeader>`, `<DialogTitle>`, `<DialogDescription>`
-- Cancel button: `<Button variant="outline">` (shadcn outline)
-- Submit button: `<Button>` (shadcn default/primary)
-- Text inputs: `<Input>` (shadcn)
-- Textarea: kept as styled `<textarea>` (no shadcn Textarea component yet)
-- Footer: `<DialogFooter>` for right-aligned actions
-
----
-
-## 4. AdminUsers Page Restructured
-
-### Two sections (tabs):
-- **Members** (default): Shows all Active users with:
-  - Role dropdown (editable)
-  - Status badge (green)
-  - "Invite User" button in header → opens `InviteUserDialog`
-  - No approve/reject actions
-  
-- **Pending**: Shows all Pending users with:
-  - Approve (checkmark) / Reject (X) buttons
-  - Same role dropdown + status badge
-
-### InviteUserDialog
-- shadcn Dialog with form: Email input + Role select (Developer/Manager/Admin)
-- TanStack Mutation: `useMutation` POSTs to `/api/users/invite`
-- Invalidates `["admin-users"]` on success, shows success toast with email + role
-
----
-
-## 5. Files Changed
-
-### New (4):
-- `apps/web/src/components/ui/dialog.tsx`
-- `apps/web/src/components/ui/button.tsx`
-- `apps/web/src/components/ui/input.tsx`
-- `apps/web/src/components/admin/InviteUserDialog.tsx`
-
-### Modified (4):
+## 3. Files Changed (Original 03)
+- `apps/web/src/components/ui/dialog.tsx` (new)
+- `apps/web/src/components/ui/button.tsx` (new)
+- `apps/web/src/components/ui/input.tsx` (new)
+- `apps/web/src/components/admin/InviteUserDialog.tsx` (new)
 - `apps/api/src/lib/validators.ts` — added `inviteUserSchema`
-- `apps/api/src/routes/users.ts` — added `POST /invite` endpoint
+- `apps/api/src/routes/users.ts` — added `POST /invite`
 - `apps/web/src/components/teams/CreateTeamDialog.tsx` — shadcn Dialog refactor
-- `apps/web/src/pages/AdminUsers.tsx` — Members + Pending tabs, invite button
+- `apps/web/src/pages/AdminUsers.tsx` — Members + Pending tabs
 
 ---
 
-## 6. Verification
+# 03-execution-agent — Workspace & Project Implementation
+
+## Overview
+
+Implemented Workspace and Project features as specified in `specs/03-workspace-project.md`. This adds a new organizational layer above Teams — Workspaces contain multiple Projects, and users must select a workspace before accessing the app.
+
+---
+
+## Database Schema Changes
+
+### New Enums
+- **WorkspaceMemberRole**: Owner, Admin, Member
+- **ProjectMemberRole**: Owner, Member
+
+### New Models
+- **Workspace**: id, name, description, createdBy (FK User), timestamps. Relations: creator (User), members (WorkspaceMember[]), projects (Project[])
+- **WorkspaceMember**: id, workspaceId, userId, role, joinedAt. Composite unique: [workspaceId, userId]. Cascades on delete.
+- **Project**: id, name, description, workspaceId, createdBy, timestamps. Relations: workspace (Workspace), creator (User), members (ProjectMember[])
+- **ProjectMember**: id, projectId, userId, role, joinedAt. Composite unique: [projectId, userId]. Cascades on delete.
+
+### User Model Updates
+Added relation fields: `workspaces WorkspaceMember[]`, `projects ProjectMember[]`, `createdWorkspaces Workspace[]`, `createdProjects Project[]`
+
+**Decision**: Used `onDelete: Restrict` for creator relations to prevent orphaned records when a user is deleted. Used `onDelete: Cascade` for member/project relations to auto-cleanup when parent is deleted.
+
+---
+
+## Backend API
+
+### Workspace Routes (`apps/api/src/routes/workspaces.ts`) — 7 endpoints
+All routes require authentication. Only Admins can create workspaces. Owner/Admin can manage.
+
+### Project Routes (`apps/api/src/routes/projects.ts`) — 7 endpoints
+Projects are URL-nested under workspaces. Users must be workspace members to access. Only Project Owner, Workspace Admin/Owner, or System Admin can manage.
+
+### Key Authorization Decisions
+- System Admin (UserRole.Admin) always has bypass permissions on any workspace/project
+- Project members must first be workspace members
+- Workspace Owner cannot be removed from their workspace
+- Any workspace member can create projects (not restricted)
+
+---
+
+## Frontend Architecture
+
+### WorkspaceContext
+Separate context from AuthContext. Stores activeWorkspace + workspaces list. Persists `active_workspace_id` in localStorage. Auto-selects first workspace if none stored.
+
+### Login → Workspace Flow
+1. User logs in → AuthContext authenticates → ProtectedRoute passes
+2. WorkspaceContext fetches workspaces from API
+3. WorkspaceGuard: no active workspace → render WorkspaceSelection page
+4. User selects/creates workspace → guard renders actual app content
+5. WorkspaceSelection is NOT a route — rendered inline by the guard
+
+### Components Created (10 new)
+- WorkspaceGuard, WorkspaceSelection page
+- CreateWorkspaceDialog, WorkspaceCard, WorkspaceDetailSheet
+- Workspaces page (full CRUD)
+- CreateProjectDialog, ProjectCard, ProjectDetailSheet
+- Projects page (scoped to active workspace)
+
+### Layout Changes
+- **Topbar**: Workspace switcher dropdown with Building icon + workspace list + checkmark on active
+- **Sidebar**: Added Workspaces + Projects nav items
+- **Logout cleanup**: Both AuthContext.logout() and axios 401 interceptor clear `active_workspace_id`
+
+---
+
+## All Files Changed (Workspace/Project Implementation)
+
+### New (14 files)
+1. `apps/api/src/routes/workspaces.ts`
+2. `apps/api/src/routes/projects.ts`
+3. `apps/web/src/context/WorkspaceContext.tsx`
+4. `apps/web/src/hooks/useWorkspace.ts`
+5. `apps/web/src/components/layout/WorkspaceGuard.tsx`
+6. `apps/web/src/pages/WorkspaceSelection.tsx`
+7. `apps/web/src/components/workspaces/CreateWorkspaceDialog.tsx`
+8. `apps/web/src/components/workspaces/WorkspaceCard.tsx`
+9. `apps/web/src/components/workspaces/WorkspaceDetailSheet.tsx`
+10. `apps/web/src/pages/Workspaces.tsx`
+11. `apps/web/src/components/projects/CreateProjectDialog.tsx`
+12. `apps/web/src/components/projects/ProjectCard.tsx`
+13. `apps/web/src/components/projects/ProjectDetailSheet.tsx`
+14. `apps/web/src/pages/Projects.tsx`
+
+### Modified (8 files)
+1. `packages/db/prisma/schema.prisma` — Added enums + 4 models + User relations
+2. `packages/db/src/index.ts` — Export new types
+3. `apps/api/src/lib/validators.ts` — Added 6 Zod schemas
+4. `apps/api/src/app.ts` — Register workspace + project routes
+5. `apps/web/src/App.tsx` — WorkspaceProvider, WorkspaceGuard, new routes
+6. `apps/web/src/components/layout/Topbar.tsx` — Workspace switcher
+7. `apps/web/src/components/layout/Sidebar.tsx` — Workspaces + Projects nav
+8. `apps/web/src/context/AuthContext.tsx` — Clear active_workspace_id on logout
+9. `apps/web/src/lib/axios.ts` — Clear active_workspace_id on 401
+
+---
+
+## Verification
 
 | Check | Status |
 |---|---|
-| API type-check | ✅ No errors |
-| Web type-check | ✅ No errors |
+| API TypeScript | ✅ Clean |
+| Web TypeScript | ✅ Clean |
+| DB Schema Push | ✅ Synced |

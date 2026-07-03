@@ -1,16 +1,25 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { Search, LogOut, User, ChevronDown } from "lucide-react";
+import { useWorkspace } from "@/hooks/useWorkspace";
+import { Search, LogOut, User, ChevronDown, Building, Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function Topbar() {
   const { user, logout } = useAuth();
+  const { activeWorkspace, workspaces, switchWorkspace } = useWorkspace();
   const [profileOpen, setProfileOpen] = useState(false);
+  const [workspaceSwitcherOpen, setWorkspaceSwitcherOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const wsDropdownRef = useRef<HTMLDivElement>(null);
 
+  // Close profile dropdown on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setProfileOpen(false);
+      }
+      if (wsDropdownRef.current && !wsDropdownRef.current.contains(e.target as Node)) {
+        setWorkspaceSwitcherOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClick);
@@ -39,6 +48,51 @@ export function Topbar() {
           />
         </div>
       </div>
+
+      {/* Workspace Switcher */}
+      {activeWorkspace && workspaces.length > 0 && (
+        <div className="relative ml-3 flex-shrink-0" ref={wsDropdownRef}>
+          <button
+            onClick={() => setWorkspaceSwitcherOpen(!workspaceSwitcherOpen)}
+            className="flex items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-sm transition-colors hover:bg-secondary"
+          >
+            <Building className="h-4 w-4 text-muted-foreground" />
+            <span className="hidden max-w-[140px] truncate font-medium text-foreground sm:block">
+              {activeWorkspace.name}
+            </span>
+            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+          </button>
+
+          {workspaceSwitcherOpen && (
+            <div className="absolute right-0 top-full mt-2 w-64 rounded-lg border border-border bg-card p-1 shadow-lg">
+              <p className="px-3 py-2 text-xs font-medium text-muted-foreground">
+                Switch Workspace
+              </p>
+              {workspaces.map((ws) => (
+                <button
+                  key={ws.id}
+                  onClick={() => {
+                    switchWorkspace(ws.id);
+                    setWorkspaceSwitcherOpen(false);
+                  }}
+                  className={cn(
+                    "flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-secondary",
+                    ws.id === activeWorkspace.id
+                      ? "text-foreground"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  <Building className="h-4 w-4 flex-shrink-0" />
+                  <span className="flex-1 truncate text-left">{ws.name}</span>
+                  {ws.id === activeWorkspace.id && (
+                    <Check className="h-4 w-4 flex-shrink-0 text-primary" />
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Profile Dropdown */}
       <div className="relative ml-4 flex-shrink-0" ref={dropdownRef}>
