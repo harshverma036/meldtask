@@ -10,7 +10,7 @@ dotenv.config({ path: resolve(__dirname, "..", "..", "..", ".env") }); // root .
 
 const { default: app } = await import("./app.js");
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 7651;
 
 app.listen(PORT, () => {
   console.log(`API server running on http://localhost:${PORT}`);

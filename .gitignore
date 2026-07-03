@@ -33,6 +33,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Uploads
+apps/api/uploads/*
+!apps/api/uploads/.gitkeep
+
 # Misc
 .DS_Store
 *.pem

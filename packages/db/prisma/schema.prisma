@@ -37,6 +37,13 @@ enum ProjectMemberRole {
   Member
 }
 
+enum TaskPriority {
+  Low
+  Medium
+  High
+  Urgent
+}
+
 // ── User ───────────────────────────────────────────────────────────────────────
 
 model User {
@@ -58,6 +65,10 @@ model User {
   projects          ProjectMember[]
   createdWorkspaces Workspace[]
   createdProjects   Project[]
+  assignedTasks     Task[]          @relation("Assignee")
+  assignedByTasks   Task[]          @relation("Assigner")
+  createdTasks      Task[]          @relation("TaskCreator")
+  taskComments      TaskComment[]
 }
 
 // ── Team ───────────────────────────────────────────────────────────────────────
@@ -133,6 +144,7 @@ model Project {
   workspace Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   creator   User            @relation(fields: [createdBy], references: [id], onDelete: Restrict)
   members   ProjectMember[]
+  tasks     Task[]
 }
 
 // ── ProjectMember (join table) ────────────────────────────────────────────────
@@ -148,4 +160,61 @@ model ProjectMember {
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, userId])
+}
+
+// ── Task ──────────────────────────────────────────────────────────────────────
+
+model Task {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  status      String       @default("Backlog")
+  priority    TaskPriority @default(Medium)
+  dueDate     DateTime?
+  projectId   String
+  parentId    String?
+  assignedTo  String?
+  assignedBy  String?
+  createdBy   String
+  position    Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  project  Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parent   Task?         @relation("TaskHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children Task[]        @relation("TaskHierarchy")
+  assignee User?         @relation("Assignee", fields: [assignedTo], references: [id], onDelete: SetNull)
+  assigner User?         @relation("Assigner", fields: [assignedBy], references: [id], onDelete: SetNull)
+  creator  User          @relation("TaskCreator", fields: [createdBy], references: [id], onDelete: Restrict)
+  comments TaskComment[]
+  assets   TaskAsset[]
+}
+
+// ── TaskComment ────────────────────────────────────────────────────────────────
+
+model TaskComment {
+  id        String   @id @default(cuid())
+  content   String
+  taskId    String
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+// ── TaskAsset ────────────────────────────────────────────────────────────────
+
+model TaskAsset {
+  id        String   @id @default(cuid())
+  type      String   // "file" or "link"
+  url       String
+  name      String   // original filename (for files) or display text (for links)
+  size      Int?     // file size in bytes (null for links)
+  mimeType  String?
+  taskId    String
+  createdAt DateTime @default(now())
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
 }

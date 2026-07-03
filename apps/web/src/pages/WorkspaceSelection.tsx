@@ -16,7 +16,7 @@ import api from "@/lib/axios";
  */
 export function WorkspaceSelection() {
   const { user, logout } = useAuth();
-  const { switchWorkspace, refreshWorkspaces } = useWorkspace();
+  const { setActiveWorkspace, refreshWorkspaces } = useWorkspace();
   const [createOpen, setCreateOpen] = useState(false);
 
   const {
@@ -33,10 +33,12 @@ export function WorkspaceSelection() {
   const isAdmin = user?.role === "Admin";
 
   /**
-   * Handle workspace selection — switch to it and the guard will render children.
+   * Handle workspace selection — set it directly as active.
+   * Uses setActiveWorkspace (passes the full object) instead of switchWorkspace
+   * (which looks up by ID in the context's internal array, which may be stale).
    */
   const handleSelect = (workspace: Workspace) => {
-    switchWorkspace(workspace.id);
+    setActiveWorkspace(workspace);
   };
 
   if (isLoading) {

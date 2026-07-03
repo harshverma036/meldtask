@@ -35,8 +35,10 @@ export interface WorkspaceContextValue {
   workspaces: Workspace[];
   /** Whether the initial workspace fetch is in progress */
   isLoading: boolean;
-  /** Switch to a different workspace */
+  /** Switch to a different workspace by ID (must exist in workspaces array) */
   switchWorkspace: (workspaceId: string) => void;
+  /** Directly set the active workspace from a Workspace object */
+  setActiveWorkspace: (workspace: Workspace) => void;
   /** Re-fetch workspace list from API */
   refreshWorkspaces: () => Promise<void>;
 }
@@ -51,6 +53,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     null
   );
   const [isLoading, setIsLoading] = useState(true);
+  // Track whether we've already done the initial fetch to avoid redundant calls
+  const [hasFetched, setHasFetched] = useState(false);
 
   /**
    * Fetch all workspaces the current user belongs to.
@@ -86,15 +90,46 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Fetch workspaces on mount (when user is authenticated)
+  /**
+   * Poll localStorage for an auth token. When the token appears (after login),
+   * fetch workspaces. This handles the case where WorkspaceProvider mounts
+   * before the user logs in.
+   */
   useEffect(() => {
-    const token = localStorage.getItem("auth_token");
-    if (token) {
-      fetchWorkspaces().finally(() => setIsLoading(false));
-    } else {
-      setIsLoading(false);
+    let interval: ReturnType<typeof setInterval> | undefined;
+
+    const checkAndFetch = () => {
+      const token = localStorage.getItem("auth_token");
+      if (token && !hasFetched) {
+        setHasFetched(true);
+        fetchWorkspaces().finally(() => setIsLoading(false));
+        // Stop polling once we've fetched
+        if (interval) clearInterval(interval);
+      } else if (!token) {
+        setIsLoading(false);
+      }
+    };
+
+    // Check immediately
+    checkAndFetch();
+
+    // Also poll every 500ms for the first 10 seconds to catch the token
+    // being set shortly after mount (e.g. during login flow)
+    if (!hasFetched) {
+      interval = setInterval(checkAndFetch, 500);
+      // Stop polling after 20 seconds to avoid infinite loops
+      setTimeout(() => {
+        if (interval) {
+          clearInterval(interval);
+          setIsLoading(false);
+        }
+      }, 20000);
     }
-  }, [fetchWorkspaces]);
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [fetchWorkspaces, hasFetched]);
 
   /**
    * Switch to a different workspace, persisting the choice.
@@ -111,6 +146,24 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   );
 
   /**
+   * Directly set the active workspace from a Workspace object.
+   * Used by WorkspaceSelection when it has fetched workspaces independently.
+   * Also adds the workspace to the internal list if not already present.
+   */
+  const setActiveWorkspaceDirectly = useCallback(
+    (workspace: Workspace) => {
+      setActiveWorkspace(workspace);
+      localStorage.setItem(ACTIVE_WORKSPACE_KEY, workspace.id);
+      // Also add to the workspaces list if not already there
+      setWorkspaces((prev) => {
+        if (prev.find((w) => w.id === workspace.id)) return prev;
+        return [...prev, workspace];
+      });
+    },
+    []
+  );
+
+  /**
    * Re-fetch workspaces from the API (e.g. after creating a new one).
    */
   const refreshWorkspaces = useCallback(async () => {
@@ -124,6 +177,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         workspaces,
         isLoading,
         switchWorkspace,
+        setActiveWorkspace: setActiveWorkspaceDirectly,
         refreshWorkspaces,
       }}
     >

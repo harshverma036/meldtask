@@ -19,7 +19,7 @@ Features list: -
     - status (while creating project there user will add multiple card statuses, so that should be visible here only)
 - every task will contains some attached assets in which user can uplod file (any + multiple) and attach links. 
 - when click on every task the whole model big model should be opened. at the top right corner there will be two options (1. cross sigh and full screen when user click on that the page will open to that task only.)
-- at the top of any task model or task page, the breadcrumb menu should be there.
+- at the top of any task model or task page, the breadcrumb menu should be there. 
 
 
 ### Task Views 

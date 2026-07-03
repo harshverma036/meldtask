@@ -9,6 +9,8 @@ import { Dashboard } from "@/pages/Dashboard";
 import { Teams } from "@/pages/Teams";
 import { Workspaces } from "@/pages/Workspaces";
 import { Projects } from "@/pages/Projects";
+import { Tasks } from "@/pages/Tasks";
+import { TaskFullPage } from "@/pages/TaskFullPage";
 import { AdminUsers } from "@/pages/AdminUsers";
 
 /** TanStack Query client with sensible defaults */
@@ -118,6 +120,26 @@ export function App() {
                   <ProtectedRoute>
                     <WorkspaceGuard>
                       <AdminUsers />
+                    </WorkspaceGuard>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/tasks"
+                element={
+                  <ProtectedRoute>
+                    <WorkspaceGuard>
+                      <Tasks />
+                    </WorkspaceGuard>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/tasks/:projectId/:taskId"
+                element={
+                  <ProtectedRoute>
+                    <WorkspaceGuard>
+                      <TaskFullPage />
                     </WorkspaceGuard>
                   </ProtectedRoute>
                 }
