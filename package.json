@@ -2,11 +2,19 @@
   "name": "meldtask",
   "private": true,
   "scripts": {
-    "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:web": "turbo run dev --filter=@meldtask/web",
+    "dev:api": "turbo run dev --filter=@meldtask/api",
+    "build": "turbo run build",
+    "build:web": "turbo run build --filter=@meldtask/web",
+    "build:api": "turbo run build --filter=@meldtask/api",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types"
+    "check-types": "turbo run check-types",
+    "db:generate": "turbo run db:generate",
+    "db:push": "turbo run db:push",
+    "db:migrate": "turbo run db:migrate",
+    "db:studio": "turbo run db:studio"
   },
   "devDependencies": {
     "prettier": "^3.7.4",
