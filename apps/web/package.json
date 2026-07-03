@@ -19,12 +19,16 @@
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.0",
     "@react-oauth/google": "^0.12.0",
+    "@tanstack/react-query": "^5.101.2",
+    "axios": "^1.18.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "date-fns": "^4.4.0",
     "lucide-react": "^0.468.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.1.0",
+    "react-toastify": "^11.1.0",
     "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {

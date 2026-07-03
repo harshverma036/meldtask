@@ -7,13 +7,68 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ── Enums ──────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  Admin
+  Developer
+  Manager
+}
+
+enum UserStatus {
+  Pending
+  Active
+  Rejected
+}
+
+enum TeamMemberRole {
+  Lead
+  Member
+}
+
+// ── User ───────────────────────────────────────────────────────────────────────
+
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  id        String     @id @default(cuid())
+  email     String     @unique
   name      String?
   avatarUrl String?
-  googleId  String?  @unique
+  googleId  String?    @unique
   password  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  role      UserRole   @default(Developer)
+  status    UserStatus @default(Pending)
+  domain    String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  // Relations
+  teams TeamMember[]
+}
+
+// ── Team ───────────────────────────────────────────────────────────────────────
+
+model Team {
+  id          String       @id @default(cuid())
+  name        String
+  description String?
+  createdBy   String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  members TeamMember[]
+}
+
+// ── TeamMember (join table) ────────────────────────────────────────────────────
+
+model TeamMember {
+  id       String         @id @default(cuid())
+  teamId   String
+  userId   String
+  role     TeamMemberRole @default(Member)
+  joinedAt DateTime       @default(now())
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
 }

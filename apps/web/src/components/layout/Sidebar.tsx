@@ -1,25 +1,43 @@
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 import {
   LayoutDashboard,
   CheckSquare,
   Users,
   Target,
   Settings,
+  Shield,
   Menu,
   X,
 } from "lucide-react";
-import { useState } from "react";
 
-const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/", active: true },
-  { icon: CheckSquare, label: "Tasks", href: "/tasks" },
-  { icon: Users, label: "Teams", href: "/teams" },
-  { icon: Target, label: "Goals", href: "/goals" },
-  { icon: Settings, label: "Settings", href: "/settings" },
-];
+interface NavItem {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  href: string;
+  adminOnly?: boolean;
+}
 
 export function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
+  const { user } = useAuth();
+
+  const navItems: NavItem[] = [
+    { icon: LayoutDashboard, label: "Dashboard", href: "/" },
+    { icon: CheckSquare, label: "Tasks", href: "/tasks" },
+    { icon: Users, label: "Teams", href: "/teams" },
+    { icon: Target, label: "Goals", href: "/goals" },
+    { icon: Shield, label: "Users", href: "/admin/users", adminOnly: true },
+    { icon: Settings, label: "Settings", href: "/settings" },
+  ];
+
+  // Filter admin-only items
+  const visibleItems = navItems.filter(
+    (item) => !item.adminOnly || user?.role === "Admin"
+  );
 
   return (
     <>
@@ -56,27 +74,34 @@ export function Sidebar() {
           <X className="h-5 w-5" />
         </button>
 
-        <div className="flex h-16 items-center border-b border-border px-6">
+        <Link
+          to="/"
+          className="flex h-16 items-center border-b border-border px-6"
+          onClick={() => setMobileOpen(false)}
+        >
           <h1 className="text-xl font-bold text-sidebar-foreground">meldtask</h1>
-        </div>
+        </Link>
 
         <nav className="flex-1 space-y-1 p-4">
-          {navItems.map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                item.active
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-              )}
-            >
-              <item.icon className="h-5 w-5" />
-              {item.label}
-            </a>
-          ))}
+          {visibleItems.map((item) => {
+            const isActive = location.pathname === item.href;
+            return (
+              <Link
+                key={item.label}
+                to={item.href}
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                )}
+              >
+                <item.icon className="h-5 w-5" />
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="border-t border-border p-4">

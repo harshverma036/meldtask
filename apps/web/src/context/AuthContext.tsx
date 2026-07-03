@@ -1,14 +1,21 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
-import { apiPost, apiGet } from "@/lib/api";
+import api from "@/lib/axios";
 
-interface User {
+/**
+ * User shape returned by the API.
+ * Mirrors the Prisma User model fields exposed via /api/me.
+ */
+export interface User {
   id: string;
   email: string;
   name: string | null;
   avatarUrl: string | null;
+  role: "Admin" | "Developer" | "Manager";
+  status: "Pending" | "Active" | "Rejected";
+  createdAt: string;
 }
 
-interface AuthContextValue {
+export interface AuthContextValue {
   user: User | null;
   isLoading: boolean;
   loginWithGoogle: (idToken: string) => Promise<void>;
@@ -21,11 +28,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // On mount, check for existing token and fetch user profile
   useEffect(() => {
     const token = localStorage.getItem("auth_token");
     if (token) {
-      apiGet<{ user: User }>("/me")
-        .then((data) => setUser(data.user))
+      api
+        .get<{ user: User }>("/me")
+        .then((res) => setUser(res.data.user))
         .catch(() => localStorage.removeItem("auth_token"))
         .finally(() => setIsLoading(false));
     } else {
@@ -33,10 +42,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  /**
+   * Send Google ID token to backend for verification.
+   * Backend returns a JWT + user object.
+   * Throws with descriptive message for domain rejection / pending approval.
+   */
   const loginWithGoogle = useCallback(async (idToken: string) => {
-    const data = await apiPost<{ token: string; user: User }>("/auth/google", { idToken });
-    localStorage.setItem("auth_token", data.token);
-    setUser(data.user);
+    const res = await api.post<{ token: string; user: User }>("/auth/google", { idToken });
+    localStorage.setItem("auth_token", res.data.token);
+    setUser(res.data.user);
   }, []);
 
   const logout = useCallback(() => {
