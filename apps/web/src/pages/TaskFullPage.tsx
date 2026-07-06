@@ -127,7 +127,7 @@ export function TaskFullPage() {
 
   return (
     <DashboardLayout>
-      <div className="mx-auto max-w-3xl space-y-5">
+      <div className="mx-auto max-w-3xl space-y-5 animate-fade-in">
         {/* ── Header: Back + Breadcrumb + Actions ── */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">

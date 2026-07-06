@@ -128,7 +128,7 @@ export function TaskFilters({
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 gap-1 text-xs"
+          className="h-8 gap-1 text-xs animate-in fade-in duration-200"
           onClick={clearFilters}
         >
           <X className="h-3 w-3" />

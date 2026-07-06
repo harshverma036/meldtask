@@ -120,7 +120,7 @@ export function TaskBoardView({
         {columns.map((column) => (
           <div
             key={column.id}
-            className="flex w-72 shrink-0 flex-col rounded-lg border border-border bg-card/50"
+            className="flex w-72 shrink-0 flex-col rounded-lg border border-border bg-card/50 transition-all duration-200 hover:border-primary/20"
           >
             {/* Column header */}
             <div className="flex items-center justify-between border-b border-border px-3 py-2.5">

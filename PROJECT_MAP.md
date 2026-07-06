@@ -54,6 +54,7 @@ meldtask/
 | Drag & Drop | @hello-pangea/dnd |
 | Google Auth | @react-oauth/google |
 | Class Merging | clsx + tailwind-merge → `cn()` utility |
+| Animation | tailwindcss-animate (plugin) + custom keyframes |
 
 ### Backend (`apps/api`)
 | Concern | Technology |
@@ -483,6 +484,7 @@ TaskAsset
 2. **✅ Teams** (`02-user-teams.md`) — Team CRUD, member management
 3. **✅ Workspace & Projects** (`03-workspace-project.md`) — Workspace CRUD, workspace switching, project CRUD with status pipeline, member management
 4. **✅ Tasks** (`04-tasks.md`, implemented in `05-tasks-implementation.md`) — Hierarchical tasks (N-level subtasks), status pipeline from project, comments with @mentions + file uploads, attached assets (files + links), task detail sheet (right-side) with breadcrumbs, list view + board view with drag-and-drop, grouping options (assigned_to, priority, status, createdAt)
+5. **✅ UI Optimization** (`06-ui-optimization.md`) — Smooth animations across all interactions: `tailwindcss-animate` plugin for overlays, card hover lift + press feedback, button press scale, page fade-in entrance, dropdown entrance animations, chevron rotation, staggered grid entrance
 
 ---
 

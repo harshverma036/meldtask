@@ -37,7 +37,7 @@ export function WorkspaceCard({
     <div
       onClick={onClick}
       className={cn(
-        "group relative cursor-pointer rounded-lg border bg-card p-5 transition-colors hover:border-primary/50",
+        "group relative cursor-pointer rounded-lg border bg-card p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md active:scale-[0.98]",
         isActive && "border-primary"
       )}
     >

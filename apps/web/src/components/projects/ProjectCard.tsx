@@ -42,7 +42,7 @@ export function ProjectCard({
   return (
     <div
       onClick={onClick}
-      className="group relative cursor-pointer rounded-lg border bg-card p-5 transition-colors hover:border-primary/50"
+      className="group relative cursor-pointer rounded-lg border bg-card p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md active:scale-[0.98]"
     >
       {/* Delete button — visible to Owner or Admin on hover */}
       {(isOwner || isAdmin) && onDelete && (

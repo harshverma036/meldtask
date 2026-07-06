@@ -114,12 +114,12 @@ export function TaskListView({
             {/* Group header */}
             <button
               onClick={() => toggleGroup(key)}
-              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-secondary/50"
+              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-all duration-200 hover:bg-secondary/50"
             >
               {isCollapsed ? (
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform duration-200" />
               ) : (
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200" />
               )}
               <span className="text-sm font-semibold text-foreground">
                 {key}
@@ -131,7 +131,7 @@ export function TaskListView({
 
             {/* Group tasks */}
             {!isCollapsed && (
-              <div className="mt-1 space-y-1">
+              <div className="mt-1 space-y-1 animate-in fade-in slide-in-from-top-1 duration-200">
                 {groupTasks.map((task) => (
                   <div key={task.id} className="relative group/task">
                     <TaskCard task={task} onClick={() => onTaskClick(task)} />

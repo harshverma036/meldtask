@@ -18,7 +18,7 @@ export function TeamCard({ team, onDelete, onClick }: Props) {
   return (
     <div
       onClick={onClick}
-      className="group cursor-pointer rounded-lg border border-border bg-card p-5 transition-colors hover:border-ring/50"
+      className="group cursor-pointer rounded-lg border border-border bg-card p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-ring/50 hover:shadow-md active:scale-[0.98]"
     >
       <div className="flex items-start justify-between">
         <div className="min-w-0 flex-1">

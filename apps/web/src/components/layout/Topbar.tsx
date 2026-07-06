@@ -54,17 +54,17 @@ export function Topbar() {
         <div className="relative ml-3 flex-shrink-0" ref={wsDropdownRef}>
           <button
             onClick={() => setWorkspaceSwitcherOpen(!workspaceSwitcherOpen)}
-            className="flex items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-sm transition-colors hover:bg-secondary"
+            className="flex items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-sm transition-all duration-200 hover:bg-secondary"
           >
             <Building className="h-4 w-4 text-muted-foreground" />
             <span className="hidden max-w-[140px] truncate font-medium text-foreground sm:block">
               {activeWorkspace.name}
             </span>
-            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+            <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${workspaceSwitcherOpen ? "rotate-180" : ""}`} />
           </button>
 
           {workspaceSwitcherOpen && (
-            <div className="absolute right-0 top-full mt-2 w-64 rounded-lg border border-border bg-card p-1 shadow-lg">
+            <div className="absolute right-0 top-full mt-2 w-64 rounded-lg border border-border bg-card p-1 shadow-lg animate-in fade-in slide-in-from-top-2 duration-200">
               <p className="px-3 py-2 text-xs font-medium text-muted-foreground">
                 Switch Workspace
               </p>
@@ -98,7 +98,7 @@ export function Topbar() {
       <div className="relative ml-4 flex-shrink-0" ref={dropdownRef}>
         <button
           onClick={() => setProfileOpen(!profileOpen)}
-          className="flex items-center gap-2 rounded-lg p-1.5 text-sm transition-colors hover:bg-secondary"
+          className="flex items-center gap-2 rounded-lg p-1.5 text-sm transition-all duration-200 hover:bg-secondary"
         >
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
             {user?.avatarUrl ? (
@@ -114,11 +114,11 @@ export function Topbar() {
           <span className="hidden text-sm font-medium text-foreground md:block">
             {user?.name || user?.email}
           </span>
-          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+          <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${profileOpen ? "rotate-180" : ""}`} />
         </button>
 
         {profileOpen && (
-          <div className="absolute right-0 top-full mt-2 w-56 rounded-lg border border-border bg-card p-1 shadow-lg">
+          <div className="absolute right-0 top-full mt-2 w-56 rounded-lg border border-border bg-card p-1 shadow-lg animate-in fade-in slide-in-from-top-2 duration-200">
             <button
               onClick={() => setProfileOpen(false)}
               className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-foreground hover:bg-secondary"

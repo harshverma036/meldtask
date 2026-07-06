@@ -82,7 +82,7 @@ export function CommentSection({ projectId, taskId }: CommentSectionProps) {
           {comments.map((comment) => (
             <div
               key={comment.id}
-              className="flex gap-3 rounded-md border border-border p-3"
+              className="flex gap-3 rounded-md border border-border p-3 animate-in fade-in slide-in-from-top-1 duration-200"
             >
               <Avatar className="h-7 w-7 shrink-0">
                 <AvatarImage
